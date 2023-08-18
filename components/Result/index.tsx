@@ -113,9 +113,9 @@ const Result = () => {
       key: 'min_z',
     },
     {
-      title: 'Download',
-      dataIndex: 'download',
-      key: 'download',
+      title: 'Action',
+      dataIndex: 'Action',
+      key: 'Action',
       render: (value: any, row: any) => (
         isClient ? (
           <PDFDownloadLink 
@@ -149,7 +149,13 @@ const Result = () => {
         </Link>
       </Col>
       <Col span={24}>
-        <Table columns={columns} dataSource={rowData} />
+        <Table 
+          columns={columns} 
+          dataSource={rowData}
+          scroll={{
+              x: true
+          }}
+        />
       </Col>
     </Row>
   )
