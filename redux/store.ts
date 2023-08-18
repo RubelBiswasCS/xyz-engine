@@ -2,10 +2,12 @@ import type { TypedUseSelectorHook } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux'
 import navReducer from '@/redux/reducers/navReducer'
+import projectReducer from './reducers/projectReducer'
 
 const store = configureStore({
   reducer: {
-    nav: navReducer
+    nav: navReducer,
+    project: projectReducer
   }
 })
 
