@@ -1,10 +1,58 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Table, Row, Col, Button } from 'antd'
 
+import { Page, Text, View, Document, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer'
+
 import { useAppSelector } from '@/redux/store'
 
+// Create styles
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: 'column',
+    backgroundColor: '#FFFFFF',
+    paddingLeft: 48,
+    paddingRight: 48
+  },
+  header: {
+    margin: 10,
+    padding: 10,
+    textAlign: 'center'
+  },
+  row: {
+    flexDirection:'row',
+    gap: 16,
+    padding: 2
+  },
+  rowLabel: {
+    fontSize: 12
+  },
+  rowValue: {
+    fontSize: 10,
+    maxWidth: '60%'
+  }
+});
+
+// Create Document Component
+const ResultDocument: any = ({ data }: any) => (
+  <Document>
+    <Page size="A4" style={styles.page}>
+      <View style={styles.header}>
+        <Text>XYZ Engine</Text>
+      </View>
+      { Object.keys(data)?.filter((key: any) => key !== 'key')?.map((key: any, idx: any) => (
+        <View key={idx} style={styles.row}>
+          <Text style={styles.rowLabel}>{`${key?.replaceAll('_',' ')?.toUpperCase()} :`}</Text>
+          <Text style={styles.rowValue}>{data[key] ?? ''}</Text>
+        </View>
+      ))}
+    </Page>
+  </Document>
+)
+
 const Result = () => {
+  const [isClient, setIsClient] = useState(false)
+
   const projects = useAppSelector(state => state?.project?.projects ?? [])
 
   // Colums
@@ -63,8 +111,35 @@ const Result = () => {
       title: 'Min Z',
       dataIndex: 'min_z',
       key: 'min_z',
+    },
+    {
+      title: 'Download',
+      dataIndex: 'download',
+      key: 'download',
+      render: (value: any, row: any) => (
+        isClient ? (
+          <PDFDownloadLink 
+            document={<ResultDocument data={row}/>} 
+            fileName="report.pdf"
+            style={{ color: '#1677ff' }}
+          >
+            {'Download'}
+          </PDFDownloadLink>
+        )
+        : ''
+      )
     }
   ]
+
+  // Rows
+  const rowData: any = useMemo(
+    () => projects.map((p: any, idx: any) => ({ ...p, key: idx })),
+    [projects]
+  )
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   return (
     <Row gutter={[12, 12]} style={{ flex: 1 }}>
@@ -74,7 +149,7 @@ const Result = () => {
         </Link>
       </Col>
       <Col span={24}>
-        <Table columns={columns} dataSource={projects} />
+        <Table columns={columns} dataSource={rowData} />
       </Col>
     </Row>
   )

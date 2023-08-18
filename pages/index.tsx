@@ -8,6 +8,7 @@ export default function Home() {
   useEffect(() => {
     router.push('/add-data')
   }, [])
+  
   return (
     <div className='flex flex-col w-full h-full justify-center items-center'>
       <Spin size='large' />
