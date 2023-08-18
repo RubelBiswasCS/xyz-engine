@@ -224,8 +224,8 @@ const AddData = () => {
               </Col>
               <Col span={12}>
                 <Item
-                  label="Max Y"
-                  name='max_Y'
+                  label="Max y"
+                  name='max_y'
                   rules={[
                     {
                       required: true,
@@ -239,7 +239,7 @@ const AddData = () => {
               <Col span={12}>
                 <Item
                   label="Min Y"
-                  name='min_Y'
+                  name='min_y'
                   rules={[
                     {
                       required: true,

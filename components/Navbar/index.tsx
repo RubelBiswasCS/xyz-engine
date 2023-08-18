@@ -62,8 +62,7 @@ const TopNav = () => {
           >
             <Avatar
               size={ 'default' }
-              style={{ backgroundColor: '#f56a00', cursor: 'pointer' }}
-              src={ 'U' }
+              style={{ backgroundColor: '#1677ff', cursor: 'pointer' }}
             />
           </Popover>
         </Col>
