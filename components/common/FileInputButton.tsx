@@ -64,7 +64,10 @@ const fileInputButtonStyles = {
   border: "1px solid #1890FF",
   boxShadow: "0px 2px 0px rgba(0, 0, 0, 0.043)",
   borderRadius: "2px",
-  color: "#FFFFFF"
+  color: "#FFFFFF",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center'
 }
 
 export default FileInputButton

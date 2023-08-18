@@ -5,6 +5,7 @@ import Papa from "papaparse"
 
 import { message, Button, Input, Form, InputNumber, Steps, Result, Row, Col } from 'antd'
 import FileInputButton from '../common/FileInputButton'
+import KPAndXChartModal from './KPAndXChartModal'
 
 // Import Icons
 import { UploadOutlined } from '@ant-design/icons'
@@ -22,10 +23,12 @@ const AddData = () => {
   const dispatch = useAppDispatch()
 
   // States
-  const [ current, setCurrent ] = useState(0)
-  const [ file, setFile ]: any = useState(null)
-  const [ projectInfo, setProjectInfo ]: any = useState(null)
-  const [ xyzInfo, setXYZInfo ]: any = useState(null)
+  const [current, setCurrent] = useState(0)
+  const [file, setFile]: any = useState(null)
+  const [projectInfo, setProjectInfo]: any = useState(null)
+  const [xyzInfo, setXYZInfo]: any = useState(null)
+  const [xyzValues, setXYZValues]: any = useState(null)
+  const [open, setOpen] = useState(false)
 
   // Refs
   const projectInfoFromRef: any = useRef(null)
@@ -82,6 +85,7 @@ const AddData = () => {
       const csv = Papa.parse(target?.result, { header: true, skipEmptyLines: true })
       const parsedData = csv?.data ?? []
       if (parsedData && parsedData?.length) {
+        setXYZValues(parsedData)
         let max_x = getMaxValue(parsedData, 'X')
         let min_x = getMinValue(parsedData, 'X')
         let max_y = getMaxValue(parsedData, 'Y')
@@ -171,6 +175,8 @@ const AddData = () => {
                   <Button
                     htmlType={ 'submit' }
                     size={ 'middle' }
+                    type={ 'primary' }
+                    ghost
                   >
                     { 'Next' }
                   </Button>
@@ -350,8 +356,22 @@ const AddData = () => {
                   </div>
                 </Item>
               </Col>
+              <Col span={ 12 }>
+                <Item
+                  label={ "View XYZ Value in Chart" }
+                >
+                  <Button 
+                    style={{ width: '100%' }} 
+                    type='primary' 
+                    ghost
+                    disabled={(!xyzValues || xyzValues?.length <= 0)}
+                    onClick={() => setOpen(true)}
+                  >
+                    View
+                  </Button>
+                </Item>
+              </Col>
             </Row>
-
             <Item style={{ margin: '24px 0px 0px 0px' }}>
               <div style={{ display: 'flex', width: '100%', justifyContent: 'flex-end', gap: 16 }}>
                 <Button
@@ -363,6 +383,8 @@ const AddData = () => {
                 <Button
                   htmlType={ 'submit' }
                   size={ 'middle' }
+                  type='primary'
+                  ghost
                 >
                   { 'Save' }
                 </Button>
@@ -409,6 +431,14 @@ const AddData = () => {
       <div className='w-full'>
         {steps[current]?.content}
       </div>
+      { open ? (
+        <KPAndXChartModal
+          open={open}
+          onCancel={() => setOpen(false)}
+          data={xyzValues}
+        />
+      ) : ''
+      }
     </div>
   )
 }
