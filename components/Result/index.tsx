@@ -1,10 +1,15 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Table, Row, Col, Button } from 'antd'
 
+// Import Components
+import { Table as AntDTable, Row, Col, Button } from 'antd'
 import { Page, Text, View, Document, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer'
+import * as ReactPDFTable from "@david.kucsai/react-pdf-table"
 
+// Import Actions and Methods
 import { useAppSelector } from '@/redux/store'
+
+const { Table, TableHeader, TableCell, DataTableCell, TableBody }: any = ReactPDFTable
 
 // Create styles
 const styles = StyleSheet.create({
@@ -13,6 +18,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingLeft: 48,
     paddingRight: 48
+  },
+  table: {
+    flexDirection: 'column',
+    backgroundColor: '#FFFFFF',
+    padding: 28,
+    marginTop: 16
   },
   header: {
     margin: 10,
@@ -30,8 +41,70 @@ const styles = StyleSheet.create({
   rowValue: {
     fontSize: 12,
     maxWidth: '60%'
+  },
+  headerRow: {
+    backgroundColor: "gray",
+    borderWidth: 0,
+    fontSize: 8,
+    textAlign: "right"
+  },
+  cellRightAlign: {
+    fontSize: 8,
+    textAlign: "right",
+    padding: 2
+  },
+  cellCenter: {
+    fontSize: 8,
+    textAlign: "center",
+    padding: 2
+  },
+  tableCell: {
+    fontSize: 8,
+    textAlign: 'center',
+    padding: 2,
+    backgroundColor: '#f5dccb'
   }
-});
+})
+
+// Create Document Component
+const TableAsPDF: any = ({ data }: any) => (
+  <Document>
+    <Page size="A3" style={styles.page}>
+      <View style={styles.header}>
+        <Text>XYZ Engine - Results</Text>
+      </View>
+      <View>
+        <Table
+          style={styles.headerRow}
+          data={data}
+        >
+          <TableHeader textAlign={"center"}>
+            <TableCell style={styles.tableCell}>Project</TableCell>
+            <TableCell style={styles.tableCell}>Client</TableCell>
+            <TableCell style={styles.tableCell}>Contractor</TableCell>
+            <TableCell style={styles.tableCell}>Max X</TableCell>
+            <TableCell style={styles.tableCell}>Min Xr</TableCell>
+            <TableCell style={styles.tableCell}>Max Y</TableCell>
+            <TableCell style={styles.tableCell}>Min Yr</TableCell>
+            <TableCell style={styles.tableCell}>Max Z</TableCell>
+            <TableCell style={styles.tableCell}>Min Zr</TableCell>
+          </TableHeader>
+          <TableBody>
+            <DataTableCell style={styles.cellCenter} getContent={(r: any) => r?.project_name ?? ''} />
+            <DataTableCell style={styles.cellCenter} getContent={(r: any) => r?.client ?? ''} />
+            <DataTableCell style={styles.cellCenter} getContent={(r: any) => r?.contractor ?? ''} />
+            <DataTableCell style={styles.cellRightAlign} getContent={(r: any) => r?.max_x ?? ''} />
+            <DataTableCell style={styles.cellRightAlign} getContent={(r: any) => r?.min_x ?? ''} />
+            <DataTableCell style={styles.cellRightAlign} getContent={(r: any) => r?.max_y ?? ''} />
+            <DataTableCell style={styles.cellRightAlign} getContent={(r: any) => r?.min_y ?? ''} />
+            <DataTableCell style={styles.cellRightAlign} getContent={(r: any) => r?.max_z ?? ''} />
+            <DataTableCell style={styles.cellRightAlign} getContent={(r: any) => r?.min_z ?? ''} />
+          </TableBody>
+        </Table>
+      </View>
+    </Page>
+  </Document>
+)
 
 // Create Document Component
 const ResultDocument: any = ({ data }: any) => (
@@ -71,11 +144,6 @@ const Result = () => {
       title: 'Client',
       dataIndex: 'client',
       key: 'client',
-    },
-    {
-      title: 'Project',
-      dataIndex: 'project_name',
-      key: 'project_name',
     },
     {
       title: 'Contractor',
@@ -143,13 +211,27 @@ const Result = () => {
 
   return (
     <Row gutter={[12, 12]} style={{ flex: 1 }}>
-      <Col span={4} offset={20}>
+      <Col span={4} offset={16}>
+        {
+          isClient ? (
+            <PDFDownloadLink 
+              document={<TableAsPDF data={rowData} />} 
+              fileName="report.pdf"
+              style={{ color: '#1677ff' }}
+            >
+              <Button className='w-full bg-white'>{'Export as PDF'}</Button>
+            </PDFDownloadLink>
+          )
+          : ''
+        }
+      </Col>
+      <Col span={4}>
         <Link href="/add-data">
           <Button className='w-full bg-white'>{'Add New'}</Button>
         </Link>
       </Col>
       <Col span={24}>
-        <Table 
+        <AntDTable 
           columns={columns} 
           dataSource={rowData}
           scroll={{

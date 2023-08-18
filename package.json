@@ -11,6 +11,7 @@
   "dependencies": {
     "@ant-design/charts": "^1.4.2",
     "@ant-design/icons": "^5.2.5",
+    "@david.kucsai/react-pdf-table": "^0.4.1",
     "@react-pdf/renderer": "^3.1.12",
     "@reduxjs/toolkit": "^1.9.5",
     "@types/node": "20.5.0",
