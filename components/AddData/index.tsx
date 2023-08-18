@@ -1,9 +1,18 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { message, Button, Input, Form, InputNumber, Steps, Result, Row, Col } from 'antd'
+// @ts-ignore
+import Papa from "papaparse"
 
-import { useAppDispatch, useAppSelector } from '@/redux/store'
+import { message, Button, Input, Form, InputNumber, Steps, Result, Row, Col } from 'antd'
+import FileInputButton from '../common/FileInputButton'
+
+// Import Icons
+import { UploadOutlined } from '@ant-design/icons'
+
+// Import Action and Methods
+import { useAppDispatch } from '@/redux/store'
 import { updateProjects } from '@/redux/reducers/projectReducer'
+import { getMaxValue, getMinValue } from '@/utils/utils'
 
 // Constants
 const { Item } = Form
@@ -12,16 +21,21 @@ const { TextArea } = Input
 const AddData = () => {
   const dispatch = useAppDispatch()
 
+  // States
   const [ current, setCurrent ] = useState(0)
+  const [ file, setFile ]: any = useState(null)
+  const [ projectInfo, setProjectInfo ]: any = useState(null)
+  const [ xyzInfo, setXYZInfo ]: any = useState(null)
 
-  const projects = useAppSelector(state => state?.project?.projects ?? [])
-  console.log({ projects })
-  const [ projectInfoForm ] = Form.useForm()
-  const [ xyzInfoForm ] = Form.useForm()
+  // Refs
+  const projectInfoFromRef: any = useRef(null)
+  const xyzInfoFormRef: any = useRef(null)
 
   // On Step 1 Form Submit
   const onProjectInfoSubmit = (values: any) => {
-    xyzInfoForm.setFieldsValue(values)
+    // xyzInfoForm.setFieldsValue({  project_name: 'Changed', max_x: 100, min_x: 99 })
+    projectInfoFromRef?.current?.setFieldsValue(values)
+    setProjectInfo(values)
     setCurrent(1)
   }
 
@@ -33,6 +47,9 @@ const AddData = () => {
   // On Step 2 Form Submit
   const onXYZInfoSubmit = (values: any) => {
     dispatch(updateProjects({ ...values }))
+    projectInfoFromRef?.current?.resetFields()
+    xyzInfoFormRef?.current?.resetFields()
+    setXYZInfo(null)
     setCurrent(2)
   }
 
@@ -41,10 +58,49 @@ const AddData = () => {
     console.log({ error })
   }
 
+  // On File Upload
+  const _onFileUpload = (e: any) => {
+    const fileToUpload = e.target.files[0]
+    const key = 'file-upload'
+
+    const allowedExtensions = ["csv"]
+    const fileExtension = fileToUpload?.type.split("/")[1]
+
+    if (!allowedExtensions?.includes(fileExtension)) {
+      message.error({ content: 'Input file is not a valid CSV file', key })
+      return
+    }
+
+    if (!fileToUpload) {
+      message.error({ content: 'No File', key })
+      return
+    }
+
+    const reader = new FileReader()
+
+    reader.onload = async ({ target }) => {
+      const csv = Papa.parse(target?.result, { header: true, skipEmptyLines: true })
+      const parsedData = csv?.data ?? []
+      if (parsedData && parsedData?.length) {
+        let max_x = getMaxValue(parsedData, 'X')
+        let min_x = getMinValue(parsedData, 'X')
+        let max_y = getMaxValue(parsedData, 'Y')
+        let min_y = getMinValue(parsedData, 'Y')
+        let max_z = getMaxValue(parsedData, 'Z')
+        let min_z= getMinValue(parsedData, 'Z')
+        setXYZInfo({ max_x, min_x, max_y, min_y, max_z, min_z })
+      }
+    }
+
+    reader.readAsText(fileToUpload)
+
+    setFile(fileToUpload)
+  }
+
   // On Add New
   const onAddNew = () => {
-    projectInfoForm.resetFields()
-    xyzInfoForm.resetFields()
+    projectInfoFromRef?.current?.resetFields()
+    xyzInfoFormRef?.current?.resetFields()
     setCurrent(0)
   }
 
@@ -60,7 +116,7 @@ const AddData = () => {
             onFinish={ onProjectInfoSubmit }
             onFinishFailed={ onProjectInfoFormSubmitError }
             validateTrigger='onChange'
-            form={ projectInfoForm }
+            ref={projectInfoFromRef}
           >
             <Item
               label="Project Name"
@@ -135,7 +191,7 @@ const AddData = () => {
             onFinish={ onXYZInfoSubmit }
             onFinishFailed={ onXYZInfoFormSubmitError }
             validateTrigger='onChange'
-            form={xyzInfoForm}
+            ref={xyzInfoFormRef}
           >
             <Row gutter={[12, 12]}>
               <Col span={12}>
@@ -219,7 +275,7 @@ const AddData = () => {
                     }
                   ]}
                 >
-                  <InputNumber style={{ width: '100%' }} controls={ false } placeholder="Min X" />
+                  <Input placeholder="Min X" />
                 </Item>
               </Col>
               <Col span={12}>
@@ -278,6 +334,22 @@ const AddData = () => {
                   <InputNumber style={{ width: '100%' }} controls={ false } placeholder="Min Z" />
                 </Item>
               </Col>
+              <Col span={ 12 }>
+                <Item
+                  label={ "Upload CSV File" }
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 8 }}>
+                    <FileInputButton
+                      onChange={ _onFileUpload }
+                      title={ 'Upload CSV File' }
+                      style={{ backgroundColor: '#fff', color: '#000', border: '1px solid #d9d9d9' }}
+                      // @ts-ignore
+                      icon={ <UploadOutlined /> }
+                    />
+                    <span>{ file?.name || '' }</span>
+                  </div>
+                </Item>
+              </Col>
             </Row>
 
             <Item style={{ margin: '24px 0px 0px 0px' }}>
@@ -319,6 +391,14 @@ const AddData = () => {
       )
     }
   ]
+
+  useEffect(() => {
+    xyzInfoFormRef?.current?.setFieldsValue({
+      ...projectInfo,
+      ...xyzInfo
+    })
+  }, [projectInfo, xyzInfo])
+
   return (
     <div className='flex flex-col justify-center items-center h-full gap-6 px-16'>
       <h1 className='text-lg'>{ "Add Data" }</h1>

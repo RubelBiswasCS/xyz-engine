@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     fontSize: 12
   },
   rowValue: {
-    fontSize: 10,
+    fontSize: 12,
     maxWidth: '60%'
   }
 });
@@ -145,7 +145,7 @@ const Result = () => {
     <Row gutter={[12, 12]} style={{ flex: 1 }}>
       <Col span={4} offset={20}>
         <Link href="/add-data">
-          <Button className='w-full bg-green-600'>{'Add New'}</Button>
+          <Button className='w-full bg-white'>{'Add New'}</Button>
         </Link>
       </Col>
       <Col span={24}>
